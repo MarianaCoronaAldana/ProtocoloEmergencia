@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+/*
+jar {
+    manifest {
+        attributes  'Main-Class': 'com.Backend.SMSaBackend'
+    }
+}*/
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+/*apply plugin: 'com.github.johnrengelman.shadow' */
+mainClassName = 'Backend.SMSBackend'
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    testImplementation group: 'junit', name: 'junit', version: '4.11'
+    implementation  'com.sparkjava:spark-core:2.6.0'
+    implementation  group: 'com.twilio.sdk', name: 'twilio', version: '8.0.+'
+    implementation  'org.slf4j:slf4j-simple:1.6.1'
+}
+
+test {
+    useJUnitPlatform()
+}
