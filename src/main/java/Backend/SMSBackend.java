@@ -23,13 +23,14 @@ import java.util.Arrays;
 public class SMSBackend {
 
     private static final String ACCOUNT_SID = "AC5894ad5ba3b84be844b46286a9c2ac73";
-    private static final String AUTH_TOKEN = "7ec31b602bb9c8df10549e6d4530d599";
+    private static final String AUTH_TOKEN = "8f47c9b15cfe6953560e9e2c0b1ffcf6";
     private static final String from = "+15076097373";
     private static int Fallos=0;
     private static Call call = null;
     static ArrayList<String> Contactos = new ArrayList<String>();
     private static String usuario;
     private static String ubicacion;
+    private static String bateria;
     private static String numeroALlamar;
 
     public static void main(String[] args) {
@@ -82,6 +83,34 @@ public class SMSBackend {
                             from,
                             body).create();
             return "OK";
+        });
+
+
+        post("/bateria", (req, res) -> {
+            Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+            Fallos = 0;
+            System.out.println("ESTOY EN BATERIA");
+
+            // Se recibe la información enviada por la aplicacion y se declaran los valores de variables importantes
+            String semiContacto;
+            usuario = req.queryParams("NombreUsuario");
+            bateria = req.queryParams("Bateria");
+            int CantidadContactos = Integer.parseInt(req.queryParams("CantidadContactos"));
+            System.out.println("Cantidad Cotactos" + req.queryParams("CantidadContactos"));
+
+            // Dependiendo de la cantidad de contactos enviada por la aplicacion, se añaden sus numeros a un array
+            for(int i = 0; i<CantidadContactos; i++){
+                int num = i+1;
+                semiContacto=req.queryParams("Contacto"+num);
+
+                if(!semiContacto.equals("-1")) {
+                    Contactos.add(req.queryParams("Contacto" + num));
+                    System.out.println("CONTACTO" + num + " = " + Contactos.get(i));
+                }
+            }
+
+            Mensaje(CrearMensaje_Bateria());
+            return "message.getSid()";
         });
 
 
@@ -146,7 +175,7 @@ public class SMSBackend {
         //TODO Cambiar link de ngrok
         call =  Call.creator(new PhoneNumber(numeroALlamar), new PhoneNumber(from),
                         new com.twilio.type.Twiml(voiceResponse.toXml())).setMethod(HttpMethod.GET)
-                .setStatusCallback(URI.create("https://1eb7-2806-103e-29-1d5e-b103-92db-92d1-fe29.ngrok.io/event"))
+                .setStatusCallback(URI.create("https://6836-2806-103e-29-a8e5-25e6-70e9-1acf-df07.ngrok.io/event"))
                 .setStatusCallbackEvent(
                         Arrays.asList("completed"))
                 .setStatusCallbackMethod(HttpMethod.POST)
@@ -173,11 +202,18 @@ public class SMSBackend {
     public static String CrearTTS_Llamada(){
         String TTS = "La persona " + usuario + " que se encuentra en " + ubicacion + " acaba de presionar un boton de panico " +
                 "en la aplicacion LLEGA BIEN y necesita ayuda inmediata de las autoridades.";
+        TTS += ".Repito mensaje" + TTS;
         return TTS;
     }
 
     public static String CrearMensaje_PoliciaNoContesta(){
         String respuesta = "La aplicacion LLEGA BIEN intento llamar en tres ocasiones al numero 911 y  no se obtuvo exito. Es muy importante que tu intentes contactar a las autoridades de inmediato.";
+        return respuesta;
+    }
+
+    public static String CrearMensaje_Bateria(){
+        String respuesta = "ATENCION! Se detecto que la persona " + usuario + " tiene un nivel de bateria de "+
+                bateria + "% en su dispositivo movil, esto puede llegar a ser un incoveniente para situaciones de riesgo, por favor, este al pendiente.";
         return respuesta;
     }
 
